@@ -97,6 +97,7 @@ public class FEAL {
             System.out.println("java FEAL 01 23 45 67 89 ab cd ef");
             return;
         }
+        
         for (int i=0;i<8;i++)
             data[i] = (byte)(Integer.parseInt(args[i],16)&255);
 
