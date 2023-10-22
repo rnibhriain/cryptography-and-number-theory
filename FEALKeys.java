@@ -6,8 +6,8 @@ public class FEALKeys {
 	
 	private static int L0, R0, L4, R4;
 	static final int PAIRS_LENGTH = 200;
-	private static String [] cipherText = new String[ 200 ];
-	private static String [] plainText = new String[ 200 ];
+	private static String [] cipherText = new String[ PAIRS_LENGTH ];
+	private static String [] plainText = new String[ PAIRS_LENGTH ];
 	private static int keyZero, keyOne, keyTwo, keyThree, keyFour, keyFive;
 	private static ArrayList< Integer > keyZeros = new ArrayList< Integer >();
 	
@@ -55,7 +55,7 @@ public class FEALKeys {
 	}
 	
 	// calculate the inner const ( from video )
-	static int calcConst ( int key ) {
+	static int calcConstK0 ( int key ) {
 		
 		// a = S5, 13, 21( L0 XOR R0 XOR L4 )
 		int a1 =  returnBit( L0 ^ R0 ^ L4, 5 ) ^ returnBit( L0 ^ R0 ^ L4, 13 ) ^ returnBit( L0 ^ R0 ^ L4, 21 );
@@ -64,23 +64,54 @@ public class FEALKeys {
 		int a2 = returnBit( L0 ^ L4 ^ R4, 15 );
 		
 		// S15( F ( L0 XOR R0 XOR K0 ) )
-		int a3 = returnBit( FEAL.f( L0 & R0 & key ), 15 );
+		int a3 = returnBit( FEAL.f( L0 ^ R0 ^ key ), 15 );
 		
 		return a1 ^ a2 ^ a3; 
 	}
 	
-	// calc inner bits possibilities 
+	// organise bits into 10..15 & 18..23
+	static int inner12Bits ( int key ) {
+		return ( ( key & ( 0x3f << 6 ) ) << 12 ) | ( ( key & 0x3F ) << 10 );
+	}
+	
+	// calc inner bits possibilities 10..15 & 18..23
 	static void innerValues () {
+    	
+    	int j = 0;
+    	
+    	boolean moveOn = false;
 		
-		for ( int i = 0; i < Math.pow( 2,  12); i++ ) {
-			for ( int j = 0; j < cipherText.length; j++ ) {
+    	// optimised version of the original function - move on if its not equal to the first result
+		for ( int i = 0; i < 4096; i++ ) {
+			
+			int key = inner12Bits( i );
+			
+			dividePairs( 0 );
+	    	j = calcConstK0( key );
+			//System.out.println( "key: " + Integer.toHexString( key ));
+			
+			for ( int k = 1; k < PAIRS_LENGTH; k++ ) {
 				
-				dividePairs( j );
+				dividePairs( k );
 				
+				if ( j != calcConstK0( key ) ) {
+					moveOn = true;
+					System.out.println( "hello" + i + " and " + k );
+					k = PAIRS_LENGTH;
+				}
 				
 			}
+			
+			if ( !moveOn ) {
+				keyZeros.add( i );
+				System.out.println( "got here innit" );
+			} else {
+				moveOn = false;
+			}
+			
 		}
 		
+		System.out.println( "DONE: " + keyZeros.size() );
 	}
 	
 	// a = S23, 29( L0 XOR R0 XOR L4 ) XOR S31( L0 XOR L4 XOR R4 ) XOR S31( F ( L0 XOR R0 XOR K0 ) )
@@ -110,20 +141,7 @@ public class FEALKeys {
     	return keyZeros.size();
     	
     }
-	
-/* 
-Given (plaintext,ciphertext) pairs (Pi,Ci), i = 0...n-1
-for K0 = 0 to 2^32 - 1 // putative K0
-	count[0] = count[1] = 0
-	for i = 0 to n - 1
-		j = bit computed in first equation for a
-		count[j] = count[j] + 1
-	next i
-	if count[0] == n or count[1] == n then
-		Save K0 // candidate for K0
-	end if
-next K0
-	*/
+
 	
 	// populate the arrays with all of the pairs
 	static void populatePairs () throws IOException {
@@ -159,10 +177,10 @@ next K0
 		System.out.println( "Populating string pairs......." );
 		populatePairs();
 		
-		dividePairs( 0 );
+		innerValues();
 		
 		System.out.println( "Begin attack on key zero....." );
-		keyZero = keyZero();
+		//keyZero = keyZero();
 		
 		if ( keyZero != 0 ) {
 			System.out.println( "Key zero: 0x" + Integer.toHexString( keyZero ) );
