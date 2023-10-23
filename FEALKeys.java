@@ -18,15 +18,7 @@ public class FEALKeys {
 		R4 = ( int ) Long.parseLong( cipherText[ index ].substring( 8 ), 16 );
 	}
 	
-	static int unknownKeyBits () {
-		int bits = 0;
-		
-		// K~0 10...15, 18...23
-		
-		return bits;
-		
-	}
-	
+	// return whether bit is 1 or 0
 	static int returnBit ( int num, int bit )  {
 		
 		int pos = 1;
@@ -37,7 +29,7 @@ public class FEALKeys {
 		} else {
 			return 0;
 		}
-		
+				
 	}
 	
 	static int calcA ( int key ) {
@@ -71,10 +63,12 @@ public class FEALKeys {
 	
 	// organise bits into 10..15 & 18..23
 	static int inner12Bits ( int key ) {
-		return ( ( key & ( 0x3f << 6 ) ) << 12 ) | ( ( key & 0x3F ) << 10 );
+		return (((key >> 6) & 0x3F) << 16) + ((key & 0x3F) << 8) ;
+		//return ( ( key & ( 0x3f << 6 ) ) << 12 ) | ( ( key & 0x3F ) << 10 );
 	}
 	
-	// calc inner bits possibilities 10..15 & 18..23
+	// calc inner bits possibilities 10..15 & 18..23 
+	// This seems to work!!
 	static void innerValues () {
     	
     	int j = 0;
@@ -82,28 +76,28 @@ public class FEALKeys {
     	boolean moveOn = false;
 		
     	// optimised version of the original function - move on if its not equal to the first result
-		for ( int i = 0; i < 4096; i++ ) {
+		for ( int i = 0; i < Math.pow(2, 12); i++ ) {
 			
 			int key = inner12Bits( i );
-			
 			dividePairs( 0 );
 	    	j = calcConstK0( key );
-			//System.out.println( "key: " + Integer.toHexString( key ));
-			
+	    	
 			for ( int k = 1; k < PAIRS_LENGTH; k++ ) {
 				
 				dividePairs( k );
 				
 				if ( j != calcConstK0( key ) ) {
+					
 					moveOn = true;
-					System.out.println( "hello" + i + " and " + k );
+					System.out.println( "hello " + i + " and " + k );
 					k = PAIRS_LENGTH;
+					
 				}
 				
 			}
 			
 			if ( !moveOn ) {
-				keyZeros.add( i );
+				keyZeros.add( key );
 				System.out.println( "got here innit" );
 			} else {
 				moveOn = false;
@@ -148,17 +142,17 @@ public class FEALKeys {
 		
 		FileReader fr = new FileReader("known.txt"); 
         BufferedReader br = new BufferedReader(fr);
-        
+
         String currentLine = br.readLine();
         int count = 0; 
         
         while( currentLine != null && count < PAIRS_LENGTH ) {
-        	
+        	        	
         	// cipher text/plain text always starts after 12 bytes
-        	plainText[ count ] = currentLine.substring( 12, 28 );
+        	plainText[ count ] = currentLine.substring( 12 );
         	
         	br.readLine();
-        	cipherText[ count ] = currentLine.substring( 12, 28 );
+        	cipherText[ count ] = currentLine.substring( 12 );
         	
         	count++;
         	currentLine = br.readLine();
@@ -177,9 +171,11 @@ public class FEALKeys {
 		System.out.println( "Populating string pairs......." );
 		populatePairs();
 		
+		System.out.println( "Begin attack on key zero....." );
+		
 		innerValues();
 		
-		System.out.println( "Begin attack on key zero....." );
+		
 		//keyZero = keyZero();
 		
 		if ( keyZero != 0 ) {
