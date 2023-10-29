@@ -18,7 +18,7 @@ public class FEALKeys {
 	}
 
 	// return whether bit is 1 or 0
-	static int returnBit ( int num, int bit )  {
+	private static int returnBit ( int num, int bit )  {
 
 		int pos = 1;
 		pos <<= bit;
@@ -33,13 +33,12 @@ public class FEALKeys {
 
 	// organise bits into 10..15 & 18..23
 	// professor says this should b << 8 instead of 10 but im unconvinced
-	static int inner12Bits ( int key ) {
-		return ( ( key & ( 0x3f << 6 ) ) << 12 ) | ( ( key & 0x3F ) << 10 );
+	private static int inner12Bits ( int key ) {
+		return ( ( key & ( 0x3f << 6 ) ) << 10 ) | ( ( key & 0x3F ) << 8 );
 	}
 
-
 	// calculate the inner const ( from video )
-	static int calcInnerConstK0 ( int key ) {
+	private static int calcInnerConstK0 ( int key ) {
 
 		// a = S5, 13, 21( L0 XOR R0 XOR L4 )
 		int a1 =  returnBit( L0 ^ R0 ^ L4, 5 ) ^ returnBit( L0 ^ R0 ^ L4, 13 ) ^ returnBit( L0 ^ R0 ^ L4, 21 );
@@ -54,8 +53,7 @@ public class FEALKeys {
 	}
 
 	// calc inner bits possibilities 10..15 & 18..23 
-	// This seems to work!!
-	static int innerValuesK0 () {
+	private static int innerValuesK0 () {
 
 		int j = 0;
 
@@ -76,7 +74,7 @@ public class FEALKeys {
 				if ( j != calcOuterConstK0( key ) ) {
 
 					moveOn = true;
-					//System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
+					System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
 					k = PAIRS_LENGTH;
 
 				}
@@ -99,7 +97,7 @@ public class FEALKeys {
 	}
 
 	// calculate the outer const ** TODO
-	static int calcOuterConstK0 ( int key ) {
+	private static int calcOuterConstK0 ( int key ) {
 
 		// S13(L0 ⊕ R0 ⊕ L4)
 		int a1 = returnBit(L0^R0^L4, 13);
@@ -115,12 +113,12 @@ public class FEALKeys {
 	}
 
 	// organise bits into 0..9 & 16..17 & 24..31
-	static int outer20Bits ( int key ) {
+	private static int outer20Bits ( int key ) {
 		//return (((key >> 6) & 0x3F) << 16) + ((key & 0x3F) << 8) ;
 		return ( ( key & 0x7F800 ) << 11 ) | ( ( key & 0x600 ) << 6 ) | ( key & 0x1FF );
 	}
 
-	static int outerValuesK0 ( int innerBits ) {
+	private static int outerValuesK0 ( int innerBits ) {
 
 		int j = 0;
 
@@ -165,7 +163,7 @@ public class FEALKeys {
 	}
 
 	// a = S23, 29( L0 XOR R0 XOR L4 ) XOR S31( L0 XOR L4 XOR R4 ) XOR S31( F ( L0 XOR R0 XOR K0 ) )
-	static int keyZero () {
+	private static int keyZero () {
 		System.out.println( "Begin attack on key zero....." );
 
 		return outerValuesK0( innerValuesK0() );
@@ -174,7 +172,7 @@ public class FEALKeys {
 
 
 	// populate the arrays with all of the pairs
-	static void populatePairs () throws IOException {
+	private static void populatePairs () throws IOException {
 
 		FileReader fr = new FileReader("known.txt"); 
 		BufferedReader br = new BufferedReader(fr);
