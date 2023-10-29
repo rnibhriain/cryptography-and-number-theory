@@ -9,7 +9,6 @@ public class FEALKeys {
 	private static String [] cipherText = new String[ PAIRS_LENGTH ];
 	private static String [] plainText = new String[ PAIRS_LENGTH ];
 	private static int keyZero, keyOne, keyTwo, keyThree, keyFour, keyFive;
-	private static ArrayList< Integer > keyZeros = new ArrayList< Integer >();
 
 	private static void dividePairs ( int index ) {
 		L0 = ( int ) Long.parseLong( plainText[ index ].substring( 0, 8 ), 16 );
@@ -188,11 +187,13 @@ public class FEALKeys {
 			// cipher text/plain text always starts after 12 bytes
 			plainText[ count ] = currentLine.substring( 12 );
 
-			br.readLine();
+			currentLine = br.readLine();
+			
 			cipherText[ count ] = currentLine.substring( 12 );
+			System.out.print("Plaintext=  " + plainText[ count ] + "\nCipherText= " + cipherText[ count ] + "\n");
 
 			count++;
-			currentLine = br.readLine();
+			br.readLine();
 			currentLine = br.readLine();
 		}
 
