@@ -190,7 +190,6 @@ public class FEALKeys {
 			currentLine = br.readLine();
 			
 			cipherText[ count ] = currentLine.substring( 12 );
-			System.out.print("Plaintext=  " + plainText[ count ] + "\nCipherText= " + cipherText[ count ] + "\n");
 
 			count++;
 			br.readLine();
