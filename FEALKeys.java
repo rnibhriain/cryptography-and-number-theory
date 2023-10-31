@@ -1,6 +1,4 @@
 import java.io.*;
-import java.util.ArrayList;
-
 
 public class FEALKeys {
 
@@ -8,7 +6,7 @@ public class FEALKeys {
 	static final int PAIRS_LENGTH = 200;
 	private static String [] cipherText = new String[ PAIRS_LENGTH ];
 	private static String [] plainText = new String[ PAIRS_LENGTH ];
-	private static int keyZero, keyOne, keyTwo, keyThree, keyFour, keyFive;
+	private static int keyZero = -1, keyOne = -1, keyTwo = -1, keyThree = -1, keyFour = -1, keyFive = -1;
 
 	private static void dividePairs ( int index ) {
 		L0 = ( int ) Long.parseLong( plainText[ index ].substring( 0, 8 ), 16 );
@@ -32,7 +30,7 @@ public class FEALKeys {
 	}
 
 	// organise bits into 10..15 & 18..23
-	// professor says this should b << 8 instead of 10 but im unconvinced
+	// professor says this should b << 10 and << 8 instead of 12 and 10 but i'm unconvinced
 	private static int inner12Bits ( int key ) {
 		return ( ( key & ( 0x3f << 6 ) ) << 10 ) | ( ( key & 0x3F ) << 8 );
 	}
@@ -64,17 +62,17 @@ public class FEALKeys {
 
 			int key = inner12Bits( i );
 			dividePairs( 0 );
-			j = calcOuterConstK0( key );
+			j = calcInnerConstK0( key );
 
 			int k = 0;
 			for ( k = 1; k < PAIRS_LENGTH; k++ ) {
 
 				dividePairs( k );
 
-				if ( j != calcOuterConstK0( key ) ) {
+				if ( j != calcInnerConstK0( key ) ) {
 
 					moveOn = true;
-					System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
+					//System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
 					k = PAIRS_LENGTH;
 
 				}
@@ -91,7 +89,7 @@ public class FEALKeys {
 
 		}
 		
-		System.out.println( "FAILED INNER BITS: " );
+		System.out.println( "FAILED INNER BITS " );
 		return 0;
 
 	}
@@ -125,12 +123,12 @@ public class FEALKeys {
 		boolean moveOn = false;
 
 		// optimised version of the original function - move on if its not equal to the first result
-		for ( int i = 0; i < Math.pow(2, 12); i++ ) {
+		for ( int i = 0; i < Math.pow( 2, 20 ); i++ ) {
 
 			int key = outer20Bits( i );
 			key |= innerBits;
 			dividePairs( 0 );
-			j = calcInnerConstK0( key );
+			j = calcOuterConstK0( key );
 
 			int k = 0;
 			for ( k = 1; k < PAIRS_LENGTH; k++ ) {
@@ -157,7 +155,7 @@ public class FEALKeys {
 
 		}
 
-		System.out.println( "FAILED OUTER BITS: " );
+		System.out.println( "FAILED OUTER BITS " );
 		return -1;
 
 	}
@@ -208,14 +206,20 @@ public class FEALKeys {
 
 		keyZero = keyZero();
 
-		if ( keyZero != -1 ) {
-			System.out.println( "Attack on key zero complete" );
+		if ( keyZero != -1 && keyOne != -1 && keyTwo != -1 && keyThree != -1 && keyFour != -1 && keyFive != -1 ) {
+
 			System.out.println( "Key zero: 0x" + Integer.toHexString( keyZero ) );
+			System.out.println( "Key one: 0x" + Integer.toHexString( keyOne ) );
+			System.out.println( "Key two: 0x" + Integer.toHexString( keyTwo ) );
+			System.out.println( "Key three: 0x" + Integer.toHexString( keyThree ) );
+			System.out.println( "Key four: 0x" + Integer.toHexString( keyFour ) );
+			System.out.println( "Key five: 0x" + Integer.toHexString( keyFive ) );
+
+			System.out.println( "Attack finished" );
+			
 		} else {
 			System.out.println( "ATTACK FAILED" );
 		}	
-
-		System.out.println( "Attack finished" );
 
 	}
 
