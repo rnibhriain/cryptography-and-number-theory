@@ -3,22 +3,11 @@
  */
 
 import java.util.Arrays;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.Byte;
-import java.nio.ByteBuffer;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
 
 public class FEAL {
     
     static int rounds = 4;
-
-	private static String [] plainText = new String[ 200 ];
     
     static byte rot2(byte x) {
         return (byte)(((x&255)<<2)|((x&255)>>>6));
@@ -95,75 +84,35 @@ public class FEAL {
         unpack(left,data,0);
         unpack(right,data,4);
     }
-    
-	static void populatePairs () throws IOException {
-		
-		FileReader fr = new FileReader("known.txt"); 
-        BufferedReader br = new BufferedReader(fr);
-        
-        String currentLine = br.readLine();
-        int count = 0; 
-        
-        while( currentLine != null && count < 200 ) {
-        	
-        	// cipher text/plain text always starts after 12 bytes
-        	plainText[ count ] = currentLine.substring( 12, 28 );
-        	
-        	br.readLine();
-        	
-        	count++;
-        	currentLine = br.readLine();
-        	currentLine = br.readLine();
-        }
-		
-        br.close();
-        
-        //System.out.println( "String pairs populated.");
-		
-	}
 
-    public static void main(String args[]) throws IOException {
+    public static void main(String args[]) {
         byte[] data = new byte[8];
         
         /* Not the keys you are looking for!!! */
         int key[]={0x0,0x0,0x0,0x0,0x0,0x0};
-        
-        populatePairs();
   
-       if (args.length!=8) {
+        if (args.length!=8) {
             System.out.println("command line error - input 8 bytes of plaintext in hex");
             System.out.println("For example:");
             System.out.println("java FEAL 01 23 45 67 89 ab cd ef");
             return;
         }
-        
-        
-        for ( int j = 0; j < 200; j++ ) {
-        	 
-        	char [] bytes = plainText[ j ].toCharArray();
-        	
-        	for (int i =0, k = 0; i< bytes.length;k++, i+=2) {
-        		String byte1 = "" +  bytes[ i ] + bytes[ i + 1 ];
-                data[k] = (byte) (( byte ) Integer.parseInt(byte1,16)&255) ;
-               // (byte)(  );
-        	}
-        	
-            System.out.print("Plaintext=  ");
-            for (int i=0;i<8;i++) System.out.printf("%02x",data[i]);
-            System.out.print("\n");
+        for (int i=0;i<8;i++)
+            data[i] = (byte)(Integer.parseInt(args[i],16)&255);
 
-            encrypt(data,key);
-            System.out.print("Ciphertext= ");
-            for (int i=0;i<8;i++) System.out.printf("%02x",data[i]);
-            System.out.print("\n");
+        System.out.print("Plaintext=  ");
+        for (int i=0;i<8;i++) System.out.printf("%02x",data[i]);
+        System.out.print("\n");
 
-            decrypt(data,key);
-           // System.out.print("Plaintext=  ");
-           // for (int i=0;i<8;i++) System.out.printf("%02x",data[i]);
-            System.out.print("\n");
-        }
-        
-        
+        encrypt(data,key);
+        System.out.print("Ciphertext= ");
+        for (int i=0;i<8;i++) System.out.printf("%02x",data[i]);
+        System.out.print("\n");
+
+        decrypt(data,key);
+        System.out.print("Plaintext=  ");
+        for (int i=0;i<8;i++) System.out.printf("%02x",data[i]);
+        System.out.print("\n");
 
         return;
     }

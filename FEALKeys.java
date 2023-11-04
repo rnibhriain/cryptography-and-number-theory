@@ -9,10 +9,22 @@ public class FEALKeys {
 	private static int keyZero = -1, keyOne = -1, keyTwo = -1, keyThree = -1, keyFour = -1, keyFive = -1;
 
 	private static void dividePairs ( int index ) {
-		L0 = ( int ) Long.parseLong( plainText[ index ].substring( 0, 8 ), 16 );
-		R0 = ( int ) Long.parseLong( plainText[ index ].substring( 8 ), 16 );
-		L4 = ( int ) Long.parseLong( cipherText[ index ].substring( 0, 8 ), 16 );
-		R4 = ( int ) Long.parseLong( cipherText[ index ].substring( 8 ), 16 );
+		L0 = pack( plainText[ index ], 0 );
+		R0 = pack( plainText[ index ], 4 );
+		L4 = pack( cipherText[ index ], 0 );
+		R4 = pack( cipherText[ index ], 4 );
+	}
+	
+	private static int pack ( String text, int index ) {
+		
+		byte [] b = new byte[ 8 ];
+		
+		for ( int i = 0, j = 0; i < b.length; i++, j += 2 ) {
+			b[ i ] = ( byte )( Integer.parseInt( text.substring( j, j + 2 ),16)&255);
+		} 
+		
+		return FEAL.pack( b, index);
+		
 	}
 
 	// return whether bit is 1 or 0
