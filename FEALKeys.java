@@ -42,7 +42,6 @@ public class FEALKeys {
 	}
 
 	// organise bits into 10..15 & 18..23
-	// professor says this should b << 10 and << 8 instead of 12 and 10 but i'm unconvinced
 	private static int inner12Bits ( int key ) {
 		return ( ( key & ( 0x3f << 6 ) ) << 10 ) | ( ( key & 0x3F ) << 8 );
 	}
@@ -84,7 +83,7 @@ public class FEALKeys {
 				if ( j != calcInnerConstK0( key ) ) {
 
 					moveOn = true;
-					//System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
+					System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
 					k = PAIRS_LENGTH;
 
 				}
