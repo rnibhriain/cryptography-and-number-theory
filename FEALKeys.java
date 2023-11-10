@@ -111,6 +111,8 @@ public class FEALKeys {
 	// a = S23, 29( L0 XOR R0 XOR L4 ) XOR S31( L0 XOR L4 XOR R4 ) XOR S31( F ( L0 XOR R0 XOR K0 ) )
 
 	private static int calcOuterConstK0 ( int key ) {
+		
+		// const_2 = S13(L0 ⊕R0 ⊕L4) ⊕ S7,15,23,31(L0 ⊕L4 ⊕R4) ⊕ S7,15,23,31 F(L0 ⊕R0 ⊕K0)
 		/*
 		int a1 = returnBit( L0 ^ R0 ^ L4, 13 );
 
@@ -120,12 +122,23 @@ public class FEALKeys {
 		int a3 = returnBit( y, 7) ^ returnBit( y, 15) ^ returnBit( y, 23) ^ returnBit( y, 31);
 
 		return a1 ^ a2 ^ a3;*/
-		int a1 = returnBit( (L0 ^ R0 ^ L4 ), 23 ) ^ returnBit( (L0 ^ R0 ^ L4 ), 29 );
+		
+		// const_1 = S23,29(L0 ⊕ R0 ⊕ L4) ⊕ S31(L4 ⊕ R4 ⊕ L0) ⊕ S31 F(L0 ⊕ R0 ⊕ K0)
+		/*int a1 = returnBit( (L0 ^ R0 ^ L4 ), 23 ) ^ returnBit( (L0 ^ R0 ^ L4 ), 29 );
 
 		int a2 = returnBit( (L0 ^ L4 ^ R4 ), 31 );
 
 		int a3 = returnBit( FEAL.f (L0 ^ R0 ^ key ), 31 );
 
+		return a1 ^ a2 ^ a3;*/
+		
+		
+		int a1 = returnBit( L0 ^ R0 ^ L4 , 5 ) ^ returnBit( L0 ^ R0 ^ L4 , 13 ) ^ returnBit( L0 ^ R0 ^ L4 , 21 );
+		
+		int a2 = returnBit( L0 ^ L4 ^ R4 , 15 );
+		
+		int a3 = returnBit( FEAL.f (L0 ^ R0 ^ key ), 15 );;
+		
 		return a1 ^ a2 ^ a3;
 
 	}
@@ -156,12 +169,10 @@ public class FEALKeys {
 
 		boolean moveOn = false;
 		int key = 0;
-		int maxCount = 0;
+		int initialSize = key0.size();
 
-		for ( int l = 0; l < key0.size(); l++ ) {
-			
-			key = 0;
-			
+		for ( int l = 0; l < initialSize; l++ ) {
+					
 			// optimised version of the original function - move on if its not equal to the first result
 			for ( int i = 0; i < Math.pow( 2, 20 ); i++ ) {
 
@@ -176,9 +187,8 @@ public class FEALKeys {
 					dividePairs( k );
 
 					if ( j != calcOuterConstK0( key ) ) {
-						if ( maxCount < k ) maxCount = k;
 						moveOn = true;
-						//System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
+						System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
 						k = PAIRS_LENGTH;
 
 					}
@@ -186,18 +196,30 @@ public class FEALKeys {
 				}
 
 				if ( !moveOn ) {
-					System.out.println( "FOUND OUTER BITS Key0 " );
-					return key;
+					
+					//System.out.println( "FOUND OUTER BITS Key0 " );
+					key0.add( key );
+					
 				} else {
 					moveOn = false;
+					
 				}
 
 			}
 		}
+		
+		for ( int i = initialSize - 1; i >= 0; i-- ) {
+			key0.remove( i );
+		}
 
-		System.out.println( "DONE OUTER BITS Key0: " + Integer.toHexString( key ) );
-		System.out.println( "FAILED OUTER BITS" );
-		return -1;
+		if ( key0.size() == 0 ) {
+			System.out.println( "FAILED OUTER BITS" );
+			return -1;
+		}
+		System.out.println( "DONE OUTER BITS Key0: " + Integer.toHexString( key0.get( 0 ) ) );
+		System.out.println( "NUmber saved: " + key0.size() );
+		
+		return key;
 
 	}
 
