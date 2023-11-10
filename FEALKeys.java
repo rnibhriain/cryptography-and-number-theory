@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.ArrayList;
 
 public class FEALKeys {
 
@@ -7,6 +8,7 @@ public class FEALKeys {
 	private static String [] cipherText = new String[ PAIRS_LENGTH ];
 	private static String [] plainText = new String[ PAIRS_LENGTH ];
 	private static int keyZero = -1, keyOne = -1, keyTwo = -1, keyThree = -1, keyFour = -1, keyFive = -1;
+	private static ArrayList <Integer> key0 = new ArrayList();
 
 	private static void dividePairs ( int index ) {
 		L0 = pack( plainText[ index ], 0 );
@@ -14,17 +16,17 @@ public class FEALKeys {
 		L4 = pack( cipherText[ index ], 0 );
 		R4 = pack( cipherText[ index ], 4 );
 	}
-	
+
 	private static int pack ( String text, int index ) {
-		
+
 		byte [] b = new byte[ 8 ];
-		
+
 		for ( int i = 0, j = 0; i < b.length; i++, j += 2 ) {
 			b[ i ] = ( byte )( Integer.parseInt( text.substring( j, j + 2 ),16)&255);
 		} 
-		
+
 		return FEAL.pack( b, index);
-		
+
 	}
 
 	// return whether bit is 1 or 0
@@ -62,16 +64,17 @@ public class FEALKeys {
 	}
 
 	// calc inner bits possibilities 10..15 & 18..23 
-	private static int innerValuesK0 () {
+	private static void innerValuesK0 () {
 
 		int j = 0;
 
 		boolean moveOn = false;
+		int key = 0;
 
 		// optimised version of the original function - move on if its not equal to the first result
 		for ( int i = 0; i < Math.pow(2, 12); i++ ) {
 
-			int key = inner12Bits( i );
+			key = inner12Bits( i );
 			dividePairs( 0 );
 			j = calcInnerConstK0( key );
 
@@ -83,7 +86,6 @@ public class FEALKeys {
 				if ( j != calcInnerConstK0( key ) ) {
 
 					moveOn = true;
-					// System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
 					k = PAIRS_LENGTH;
 
 				}
@@ -91,79 +93,109 @@ public class FEALKeys {
 			}
 
 			if ( !moveOn ) {  
-				System.out.println( "DONE INNER BITS Key0: " );
-				return key;
+				System.out.println( "DONE INNER BITS Key0: " + Integer.toBinaryString( key ) );
+				key0.add( key );
 			} else {
 				moveOn = false;
 			}
- 
+
 		}
-		
-		System.out.println( "FAILED INNER BITS ");
-		return 0;
+
+		if ( key0.size() == 0 ) {
+			System.out.println( "FAILED INNER BITS ");
+		}
 
 	}
 
-	// calculate the outer const ** TODO
+	// calculate the outer const 
+	// a = S23, 29( L0 XOR R0 XOR L4 ) XOR S31( L0 XOR L4 XOR R4 ) XOR S31( F ( L0 XOR R0 XOR K0 ) )
+
 	private static int calcOuterConstK0 ( int key ) {
+		/*
+		int a1 = returnBit( L0 ^ R0 ^ L4, 13 );
 
-		// S13(L0 ⊕ R0 ⊕ L4)
-		int a1 = returnBit(L0^R0^L4, 13);
+		int a2 = returnBit( L0 ^ L4 ^ R4, 7 ) ^ returnBit( L0 ^ L4 ^ R4, 15 ) ^ returnBit( L0 ^ L4 ^ R4, 23 ) ^ returnBit( L0 ^ L4 ^ R4, 31 );
 
-		// S7,15,23,31(L0 ⊕ L4 ⊕ R4)
-		int a2 = returnBit(L0^L4^R4, 7)^returnBit(L0^L4^R4, 15)^returnBit(L0^L4^R4, 23)^returnBit(L0^L4^R4, 31);
+		int y = FEAL.f( L0 ^ R0 ^ key );
+		int a3 = returnBit( y, 7) ^ returnBit( y, 15) ^ returnBit( y, 23) ^ returnBit( y, 31);
 
-		// S7,15,23,31 F(L0 ⊕ R0 ⊕ K0)
-		int y0 = FEAL.f(L0^R0^key);
-		int a3 = returnBit(y0, 7)^returnBit(y0, 15)^returnBit(y0, 23)^returnBit(y0, 31);
+		return a1 ^ a2 ^ a3;*/
+		int a1 = returnBit( (L0 ^ R0 ^ L4 ), 23 ) ^ returnBit( (L0 ^ R0 ^ L4 ), 29 );
 
-		return a1^a2^a3;
+		int a2 = returnBit( (L0 ^ L4 ^ R4 ), 31 );
+
+		int a3 = returnBit( FEAL.f (L0 ^ R0 ^ key ), 31 );
+
+		return a1 ^ a2 ^ a3;
+
 	}
 
 	// organise bits into 0..9 & 16..17 & 24..31
 	private static int outer20Bits ( int key ) {
-		return ( ( key & 0x7F800 ) << 11 ) | ( ( key & 0x600 ) << 6 ) | ( key & 0x1FF );
+		//return ( ( ( key >> 12 ) & 0xFF ) << 24 ) + ( ( ( key & 0xF ) >> 2 ) << 6 ) + ( ( key & 0x3 ) << 6 ) + ( ( key >> 4 ) & 0xFF );
+		//return ( ( key & 0x300 ) << 6 ) + ( key & 0xFF );
+		// return ( ( key & 0xFFC00 ) << 12 ) | ( ( key & 0x300 ) << 6 ) | ( key & 0xFF );
+		/*
+		int a0 = (((key & 0xF) >> 2) << 6) + ((tilda >> 16) & 0xFF);
+        int a1 = ((key & 0x3) << 6) + ((tilda >> 8) & 0xFF);
+
+        int b0 = (key >> 12) & 0xFF;
+        int b3 = (key >> 4) & 0xFF;
+
+        int b1 = b0^a0;
+        int b2 = b3^a1;*/
+
+		//return (b0 << 24)  + (b1 << 16) + (b2 << 8) + b3;
+		return ( ( key & 0xFFC00 ) << 12 ) | ( ( key & 0x300 ) << 6 ) | ( key & 0xFF );
+
 	}
 
-	private static int outerValuesK0 ( int innerBits ) {
+	private static int outerValuesK0 () {
 
 		int j = 0;
 
 		boolean moveOn = false;
+		int key = 0;
+		int maxCount = 0;
 
-		// optimised version of the original function - move on if its not equal to the first result
-		for ( int i = 0; i < Math.pow( 2, 20 ); i++ ) {
+		for ( int l = 0; l < key0.size(); l++ ) {
+			
+			key = 0;
+			
+			// optimised version of the original function - move on if its not equal to the first result
+			for ( int i = 0; i < Math.pow( 2, 20 ); i++ ) {
 
-			int key = outer20Bits( i );
-			key |= innerBits;
-			dividePairs( 0 );
-			j = calcOuterConstK0( key );
+				key = outer20Bits( i );
+				key |= key0.get( l );
+				dividePairs( 0 );
+				j = calcOuterConstK0( key );
 
-			int k = 0;
-			for ( k = 1; k < PAIRS_LENGTH; k++ ) {
+				int k = 0;
+				for ( k = 1; k < PAIRS_LENGTH; k++ ) {
 
-				dividePairs( k );
+					dividePairs( k );
 
-				if ( j != calcOuterConstK0( key ) ) {
+					if ( j != calcOuterConstK0( key ) ) {
+						if ( maxCount < k ) maxCount = k;
+						moveOn = true;
+						//System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
+						k = PAIRS_LENGTH;
 
-					moveOn = true;
-					System.out.println( "hello " + Integer.toBinaryString( key ) + " and " + k );
-					k = PAIRS_LENGTH;
+					}
 
 				}
 
-			}
+				if ( !moveOn ) {
+					System.out.println( "FOUND OUTER BITS Key0 " );
+					return key;
+				} else {
+					moveOn = false;
+				}
 
-			if ( !moveOn ) {
-				System.out.println( "FOUND OUTER BITS Key0: " );
-				System.out.println( "got here" );
-				return key;
-			} else {
-				moveOn = false;
 			}
-
 		}
 
+		System.out.println( "DONE OUTER BITS Key0: " + Integer.toHexString( key ) );
 		System.out.println( "FAILED OUTER BITS" );
 		return -1;
 
@@ -172,7 +204,8 @@ public class FEALKeys {
 	// a = S23, 29( L0 XOR R0 XOR L4 ) XOR S31( L0 XOR L4 XOR R4 ) XOR S31( F ( L0 XOR R0 XOR K0 ) )
 	private static int keyZero () {
 		System.out.println( "Begin attack on key zero....." );
-		return outerValuesK0( innerValuesK0() );
+		innerValuesK0();
+		return outerValuesK0();
 	}
 
 
@@ -191,7 +224,7 @@ public class FEALKeys {
 			plainText[ count ] = currentLine.substring( 12 );
 
 			currentLine = br.readLine();
-			
+
 			cipherText[ count ] = currentLine.substring( 12 );
 
 			count++;
@@ -212,7 +245,7 @@ public class FEALKeys {
 		populatePairs();
 
 		keyZero = keyZero();
-		
+		System.out.println( "Key zero:  0x" + Integer.toHexString( keyZero ) );		
 
 		if ( keyZero != -1 && keyOne != -1 && keyTwo != -1 && keyThree != -1 && keyFour != -1 && keyFive != -1 ) {
 
@@ -224,7 +257,7 @@ public class FEALKeys {
 			System.out.println( "Key five:  0x" + Integer.toHexString( keyFive ) );
 
 			System.out.println( "Attack finished" );
-			
+
 		} else {
 			System.out.println( "ATTACK FAILED" );
 		}	
