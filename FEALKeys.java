@@ -204,78 +204,64 @@ public class FEALKeys {
 
 	}
 
-	// calc inner bits possibilities 10..15 & 18..23 
-	private static void innerValuesK1 ( int k0 ) {
-
-		int j = 0;
-
-		boolean moveOn = false;
-		int key = 0;
-
-		// optimised version of the original function - move on if its not equal to the first result
-		for ( int i = 0; i < Math.pow(2, 12); i++ ) {
-
-			key = inner12Bits( i );
-			dividePairs( 0 );
-			j = calcInnerConstK1( key, k0 );
-
-			int k = 0;
-			for ( k = 1; k < PAIRS_LENGTH; k++ ) {
-
-				dividePairs( k );
-
-				if ( j != calcInnerConstK1( key, k0 ) ) {
-					moveOn = true;
-					k = PAIRS_LENGTH;
-
-				}
-
-			}
-
-			if ( !moveOn ) {  
-				System.out.println( "DONE INNER BITS Key1: " + Integer.toBinaryString( key ) );
-				key1.add( key );
-			} else {
-				moveOn = false;
-			}
-
-		}
-
-		if ( key1.size() == 0 ) {
-			System.out.println( "FAILED INNER BITS ");
-		} 
-
-	}
-
 	private static void keyZero () {
 		System.out.println( "Begin attack on key zero....." );
 		innerValuesK0();
 		outerValuesK0();
-		System.out.println( "Key options : " + key1.size() );
+		System.out.println( "Key options : " + key0.size() );
+	}
+	
+	// calc inner bits possibilities 10..15 & 18..23 
+	private static void innerValuesK1 ( int k0 ) {
+
+		int j = 0;
+		boolean moveOn = false;
+		
+		for ( int k1 = 0; k1 < Math.pow( 2, 12 ); k1++ ) {
+			
+			dividePairs( 0 );
+			j = calcInnerConstK1( k1, k0 );
+			
+			for ( int l = 1; l < PAIRS_LENGTH; l++ ) {
+				
+				dividePairs( l );
+				
+				if ( j != calcInnerConstK1( k1, k0 ) ) {
+					
+					System.out.println( "FAIL " + l );
+					moveOn = true;
+					l = PAIRS_LENGTH;
+
+				}
+				
+			}
+			
+			if ( !moveOn ) {
+				key1.add( k1 );
+				moveOn = false;
+				System.out.println( "SUCCESS" );
+			} 
+			
+			
+		}
+		
+		if ( key1.size() == 0 ) {
+			System.out.println( "FAILED INNER BITS " );
+		} 
+
 	}
 
 
 	// S5,13,21(L0 ⊕ L4 ⊕ R4) ⊕ S15 F(L0 ⊕ F(L0 ⊕ R0 ⊕ K0) ⊕ K1)
-	private static int calcInnerConstK1 ( int key1, int key0 ) {
+	private static int calcInnerConstK1 ( int k1, int k0 ) {
 		
-		int a1 =  returnBit( L0 ^ L4 ^ R4, 5 ) ^ returnBit( L0 ^ L4 ^ R4, 13 ) ^ returnBit( L0 ^ L4 ^ R4, 21 );
+        int a1 = returnBit( L0^ L4 ^ R4, 5 ) ^ returnBit( L0 ^ L4 ^ R4, 13 ) ^ returnBit( L0 ^ L4 ^ R4, 21 );
 
-		int a2 = FEAL.f( L0 ^ R0 ^ key0 );
+        int y = FEAL.f( L0 ^ R0 ^ k0);
+        
+        int a2 = returnBit( FEAL.f( L0 ^ y ^ k1 ), 15 );
 
-		int a3 = returnBit( FEAL.f( L0 ^ a2 ^ key1), 15 );
-
-		return a1 ^ a2 ^ a3; 
-		
-		
-		
-		// S5,13,21(L0 ⊕ L4 ⊕ R4)
-       /* int a1 = returnBit(L0^L4^R4, 5)^returnBit(L0^L4^R4, 13)^returnBit(L0^L4^R4, 21);
-
-        // S15 F(L0 ⊕ F(L0 ⊕ R0 ⊕ K0) ⊕ K1)
-        int y0 = FEAL.f(L0^R0^key0);
-        int a2 = returnBit(FEAL.f(L0^y0^key1), 15);
-
-        return a1^a2; */
+        return a1 ^ a2;
 
 	}
 
@@ -322,7 +308,7 @@ public class FEALKeys {
 		populatePairs();
 
 		keyZero();
-		
+		//keyOne( key0.get( 1 ) );
 		for ( int i = 0; i < key0.size(); i++ ) {
 			keyOne( key0.get( i ) );
 		}
