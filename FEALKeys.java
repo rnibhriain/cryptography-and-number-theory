@@ -49,7 +49,7 @@ public class FEALKeys {
 	private static int returnBit ( int num, int bit )  {
 
 		int pos = 1;
-		pos <<= 31-bit;
+		pos <<= 31 - bit;
 
 		if ( ( num & pos ) != 0 ) {
 			return 1;
@@ -86,6 +86,7 @@ public class FEALKeys {
 	}
 
 	// calc inner bits possibilities 10..15 & 18..23 
+	
 	private static void innerValuesK0 () {
 
 		int j = 0;
@@ -169,9 +170,6 @@ public class FEALKeys {
 			}
 
 			if ( !moveOn ) {
-				key0.add( key );
-				// System.out.println( "DONE OUTER BITS Key0: " + Integer.toBinaryString( key ) );
-
 				keyOne( key );
 
 			} else {
@@ -186,7 +184,6 @@ public class FEALKeys {
 	private static void keyZero () {
 		System.out.println( "Begin attack on key zero....." );
 		innerValuesK0();
-		System.out.println( "Key options : " + key0.size() );
 	}
 
 	// calc inner bits possibilities 10..15 & 18..23 
@@ -200,7 +197,7 @@ public class FEALKeys {
 
 			key = inner12Bits( k1 );
 			dividePairs( 0 );
-			j = calcInnerConstK1( k1, k0 );
+			j = calcInnerConstK1( key, k0 );
 
 			for ( int l = 1; l < PAIRS_LENGTH; l++ ) {
 
@@ -208,7 +205,6 @@ public class FEALKeys {
 
 				if ( j != calcInnerConstK1( key, k0 ) ) {
 
-					System.out.println( "FAIL " + l );
 					moveOn = true;
 					l = PAIRS_LENGTH;
 
@@ -241,7 +237,6 @@ public class FEALKeys {
 
 		int a2 = returnBit( FEAL.f( L0 ^ y ^ k1 ), 15 );
 
-		System.out.println( a1 ^ a2 );
 		return a1 ^ a2;
 
 	}
