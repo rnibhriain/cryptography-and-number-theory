@@ -199,14 +199,13 @@ public class FEALKeys {
 			dividePairs( 0 );
 			j = calcInnerConstK1( key, k0 );
 
-			for ( int l = 1; l < PAIRS_LENGTH; l++ ) {
+			for ( int k = 1; k < PAIRS_LENGTH; k++ ) {
 
-				dividePairs( l );
+				dividePairs( k );
 
 				if ( j != calcInnerConstK1( key, k0 ) ) {
-
 					moveOn = true;
-					l = PAIRS_LENGTH;
+					k = PAIRS_LENGTH;
 
 				}
 
@@ -214,9 +213,10 @@ public class FEALKeys {
 
 			if ( !moveOn ) {
 				key1.add( key );
-				moveOn = false;
 				System.out.println( "SUCCESS" );
-			} 
+			} else {
+				moveOn = false;
+			}
 
 
 		}
@@ -315,9 +315,9 @@ public class FEALKeys {
 	}
 
 	private static void keyOne ( int k0 ) {
-		System.out.println( "Begin attack on key One....." + k0 );
+		// System.out.println( "Begin attack on key One....." + k0 );
 		innerValuesK1( k0 );
-		outerValuesK1( k0 );
+		// outerValuesK1( k0 );
 		System.out.println( "Key options : " + key1.size() );
 	}
 
