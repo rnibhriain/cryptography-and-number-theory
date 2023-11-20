@@ -21,7 +21,7 @@ public class FEALKeys {
 	private static int L0, R0, L4, R4;
 	static final int PAIRS_LENGTH = 200;
 	private static String [] cipherText = new String[ PAIRS_LENGTH ];
-	
+
 	private static String [] plainText = new String[ PAIRS_LENGTH ];
 	private static ArrayList <KeyOptions> keys = new ArrayList<KeyOptions>();
 	private static ArrayList <Integer> key0 = new ArrayList<Integer>();
@@ -87,11 +87,10 @@ public class FEALKeys {
 	}
 
 	// calc inner bits possibilities 10..15 & 18..23 
-	
+
 	private static void innerValuesK0 () {
 
 		int j = 0;
-
 		boolean moveOn = false;
 		int key = 0;
 
@@ -128,7 +127,6 @@ public class FEALKeys {
 
 	// calculate the outer const 
 	// a = S23, 29( L0 XOR R0 XOR L4 ) XOR S31( L0 XOR L4 XOR R4 ) XOR S31( F ( L0 XOR R0 XOR K0 ) )
-	
 	private static int calcOuterConstK0 ( int key ) {
 
 		// 1000 key options
@@ -145,7 +143,6 @@ public class FEALKeys {
 	private static void outerValuesK0 ( int keyInnerBits ) {
 
 		int j = 0;
-
 		boolean moveOn = false;
 		int key = 0;
 
@@ -173,13 +170,12 @@ public class FEALKeys {
 
 			if ( !moveOn ) {
 				keyOne( key );
-
 			} else {
 				moveOn = false;
 
 			}
-
 		}
+
 
 	}
 
@@ -195,9 +191,10 @@ public class FEALKeys {
 		boolean moveOn = false;
 		int key = 0;
 
-		for ( int k1 = 0; k1 < Math.pow( 2, 12 ); k1++ ) {
+		// optimised function again
+		for ( int i = 0; i < Math.pow( 2, 12 ); i++ ) {
 
-			key = inner12Bits( k1 );
+			key = inner12Bits( i );
 			dividePairs( 0 );
 			j = calcInnerConstK1( key, k0 );
 
@@ -208,35 +205,30 @@ public class FEALKeys {
 
 				if ( j != calcInnerConstK1( key, k0 ) ) {
 					moveOn = true;
-					System.out.println( "FAIL " + k1 + " " + k );
 					k = PAIRS_LENGTH;
-
 				}
 
 			}
 
 			if ( !moveOn ) {
-				System.out.println( "SUCCESS" );
-				outerValuesK1( key );
+				System.out.println( "SUCCESS: " + Integer.toHexString( key ) );
+				outerValuesK1( key, k0 );
 			} else {
+				//System.out.println( "FAIL " + key + " " + k );
 				moveOn = false;
 			}
 
 
 		}
 
-		if ( key1.size() == 0 ) {
-			System.out.println( "FAILED INNER BITS " );
-		} 
-
 	}
 
 	// S5,13,21(L0 ⊕ L4 ⊕ R4) ⊕ S15 F(L0 ⊕ F(L0 ⊕ R0 ⊕ K0) ⊕ K1)
 	private static int calcInnerConstK1 ( int k1, int k0 ) {
-
+		
 		int a1 = returnBit( L0 ^ L4 ^ R4, 5 ) ^ returnBit( L0 ^ L4 ^ R4, 13 ) ^ returnBit( L0 ^ L4 ^ R4, 21 );
 
-		int y = FEAL.f( L0 ^ R0 ^ k0);
+		int y = FEAL.f( L0 ^ R0 ^ k0 );
 
 		int a2 = returnBit( FEAL.f( L0 ^ y ^ k1 ), 15 );
 
@@ -303,15 +295,15 @@ public class FEALKeys {
 		return key;
 
 	}
-	
-	// TODO innerconst value
+
+	// 
 	private static int calcOuterConstK1 ( int k1, int k0 ) {
 
-		int a1 = returnBit( L0 ^ L4 ^ R4, 5 ) ^ returnBit( L0 ^ L4 ^ R4, 13 ) ^ returnBit( L0 ^ L4 ^ R4, 21 );
+		int a1 = returnBit( L0 ^ L4 ^ R4, 13 );
 
 		int y = FEAL.f( L0 ^ R0 ^ k0);
 
-		int a2 = returnBit( FEAL.f( L0 ^ y ^ k1 ), 15 );
+		int a2 = returnBit( FEAL.f( L0 ^ y ^ k1 ), 7 ) ^ returnBit( FEAL.f( L0 ^ y ^ k1 ), 15 ) ^ returnBit( FEAL.f( L0 ^ y ^ k1 ), 23 ) ^ returnBit( FEAL.f( L0 ^ y ^ k1 ), 31  );
 
 		return a1 ^ a2;
 
@@ -361,7 +353,6 @@ public class FEALKeys {
 	private static void keyOne ( int k0 ) {
 		// System.out.println( "Begin attack on key One....." + k0 );
 		innerValuesK1( k0 );
-		// outerValuesK1( k0 );
 		System.out.println( "Key options : " + key1.size() );
 	}
 
@@ -409,7 +400,7 @@ public class FEALKeys {
 	}
 
 	// S5,13,21(L0 ⊕ L4 ⊕ R4) ⊕ S15 F(L0 ⊕ F(L0 ⊕ R0 ⊕ K0) ⊕ K1)
-	private static int calcInnerConstK1 ( int k1, int k0, int k2 ) {
+	private static int calcInnerConstK2 ( int k1, int k0, int k2 ) {
 
 		int a1 = returnBit( L0 ^ L4 ^ R4, 5 ) ^ returnBit( L0 ^ L4 ^ R4, 13 ) ^ returnBit( L0 ^ L4 ^ R4, 21 );
 
@@ -421,10 +412,8 @@ public class FEALKeys {
 
 	}
 
-
-	
 	// TODO innerconst value
-	private static int calcOuterConstK1 ( int k1, int k0, int k2 ) {
+	private static int calcOuterConstK2 ( int k1, int k0, int k2 ) {
 
 		int a1 = returnBit( L0 ^ L4 ^ R4, 5 ) ^ returnBit( L0 ^ L4 ^ R4, 13 ) ^ returnBit( L0 ^ L4 ^ R4, 21 );
 
@@ -483,7 +472,7 @@ public class FEALKeys {
 		System.out.println( "Key options : " + key1.size() );
 	}
 
-// *********************************************************************************************************************************************************
+	// *********************************************************************************************************************************************************
 	// calc inner bits possibilities 10..15 & 18..23 
 	private static void innerValuesK3 ( int k0, int k1, int k2 ) {
 
@@ -539,7 +528,7 @@ public class FEALKeys {
 		return a1 ^ a2;
 
 	}
-	
+
 	// TODO innerconst value
 	private static int calcOuterConstK2 ( int k1, int k0, int k2, int k3 ) {
 
@@ -599,7 +588,7 @@ public class FEALKeys {
 		// outerValuesK1( k0 );
 		System.out.println( "Key options : " + key1.size() );
 	}
-// *********************************************************************************************************************************************************
+	// *********************************************************************************************************************************************************
 
 	private static void evaluatePossibilities ( int k0, int k1, int k2, int k3 ) {
 
@@ -617,17 +606,17 @@ public class FEALKeys {
 		int i = 0;
 		// test keys against pairs
 		for ( i = 0; i < PAIRS_LENGTH; i++ ) {
-			
+
 			byte [] b = new byte[ 8 ];
 
 			for ( int l = 0, j = 0; i < b.length; l++, j += 2 ) {
 				b[ l ] = ( byte )( Integer.parseInt( plainText[ i ].substring( j, j + 2 ),16)&255);
 			}  
-			
+
 			FEAL.encrypt( b, key );
 			String current = "";
 			current += b[ 0 ] + b[ 1 ] + b[ 2 ] + b[ 3 ] + b[ 4 ] + b[ 5 ] + b[ 6 ] + b[ 7 ];
-			
+
 			if ( !cipherText[ i ].equals( current ) ) {
 				break;
 			}
@@ -646,10 +635,10 @@ public class FEALKeys {
 		}
 
 	}
-	
+
 
 	// populate the arrays with all of the pairs
-	
+
 	private static void populatePairs () throws IOException {
 
 		FileReader fr = new FileReader("known.txt"); 
