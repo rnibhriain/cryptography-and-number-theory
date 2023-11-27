@@ -155,6 +155,24 @@ public class FEALKeys {
 
 	}
 
+	// calculate the outer const 
+	private static int calcOuterConstK0_2 ( int key ) {
+
+		// S13(L0 ⊕ R0 ⊕ L4)
+		int a1 = returnBit( L0 ^ R0 ^ L4 , 23 ) ^ returnBit( L0 ^ R0 ^ L4 , 29 );
+
+		// S7,15,23,31(L0 ⊕ L4 ⊕ R4)
+		int a2 = returnBit( L0 ^ L4 ^ R4, 31 );
+
+		// S7,15,23,31 F(L0 ⊕ R0 ⊕ K0)
+		int y0 = FEAL.f( L0 ^ R0 ^ key );
+		int a3 = returnBit( y0, 31 );
+
+		return a1^a2^a3;
+
+
+	}
+
 	private static void outerValuesK0 ( int keyInnerBits ) {
 		int j = 0;
 		boolean moveOn = false;
@@ -290,6 +308,7 @@ public class FEALKeys {
 			}
 
 			if ( !moveOn ) {
+				
 				keyTwo( key0, key );
 
 			} else {
@@ -346,20 +365,20 @@ public class FEALKeys {
 
 	private static int calcInnerConstK2 ( int k2, int k0, int k1 ) {
 
-        int a1 = returnBit( L0 ^ R0 ^ L4, 5 ) ^ returnBit( L0 ^ R0 ^ L4, 13 ) ^ returnBit( L0 ^ R0 ^ L4, 21 );
+		int a1 = returnBit( L0 ^ R0 ^ L4, 5 ) ^ returnBit( L0 ^ R0 ^ L4, 13 ) ^ returnBit( L0 ^ R0 ^ L4, 21 );
 
-        int y0 = FEAL.f( L0 ^ R0 ^ k0 );
-        int y1 = FEAL.f( L0 ^ y0 ^ k1 );
-        int a2 = returnBit( FEAL.f( L0 ^ R0 ^ y1 ^ k2), 15 );
+		int y0 = FEAL.f( L0 ^ R0 ^ k0 );
+		int y1 = FEAL.f( L0 ^ y0 ^ k1 );
+		int a2 = returnBit( FEAL.f( L0 ^ R0 ^ y1 ^ k2), 15 );
 
-        return a1 ^ a2;
+		return a1 ^ a2;
 
 	}
 
 	private static int calcOuterConstK2_2 ( int k2, int k0, int k1 ) {
 
 		int a1 = returnBit( L0 ^ R0 ^ L4 , 23 ) ^ returnBit( L0 ^ R0 ^ L4 , 29 );
-		
+
 		int y0 = FEAL.f( L0 ^ R0 ^ k0 );
 		int y1 = FEAL.f( L0 ^ y0 ^ k1 );
 
@@ -368,7 +387,7 @@ public class FEALKeys {
 		return a1 ^ a3;
 
 	}
-	
+
 	private static int calcOuterConstK2 ( int k2, int k0, int k1 ) {
 
 		// S13(L0 ⊕ L4 ⊕ R4)
@@ -384,7 +403,7 @@ public class FEALKeys {
 
 	}
 
-	
+
 	private static void outerValuesK2 ( int keyInnerBits, int key0, int K1 ) {
 
 		int j = 0;
@@ -414,9 +433,9 @@ public class FEALKeys {
 			}
 
 			if ( !moveOn ) {
-				System.out.println( "SUCCESS  K2: " + Integer.toHexString(key));
-				// SkeyThree( key0, K1, key );
-				key1.add( key );
+				//System.out.println( "SUCCESS  K2: " + Integer.toHexString(key));
+				keyThree( key0, K1, key );
+				//key1.add( key );
 			} else {
 				moveOn = false;
 
@@ -472,16 +491,16 @@ public class FEALKeys {
 
 	private static int calcInnerConstK3 ( int k3, int k0, int k1, int k2 ) {
 
-        int a1 = returnBit( L0 ^ R4 ^ L4, 5 ) ^ returnBit( L0 ^ R4 ^ L4, 13 ) ^ returnBit( L0 ^ R4 ^ L4, 21 );
+		int a1 = returnBit( L0 ^ R4 ^ L4, 5 ) ^ returnBit( L0 ^ R4 ^ L4, 13 ) ^ returnBit( L0 ^ R4 ^ L4, 21 );
 
-        int a2 = returnBit( L0 ^ R0 ^ L4, 15 );
-        
-        int y0 = FEAL.f( L0 ^ R0 ^ k0 );
-        int y1 = FEAL.f( L0 ^ y0 ^ k1 );
-        int y2 = FEAL.f( L0 ^ R0 ^ y1 ^ k2 );
-        int a3 = returnBit( FEAL.f( L0 ^ y2 ^ y0 ^ k3), 15 );
+		int a2 = returnBit( L0 ^ R0 ^ L4, 15 );
 
-        return a1 ^ a2 ^ a3;
+		int y0 = FEAL.f( L0 ^ R0 ^ k0 );
+		int y1 = FEAL.f( L0 ^ y0 ^ k1 );
+		int y2 = FEAL.f( L0 ^ R0 ^ y1 ^ k2 );
+		int a3 = returnBit( FEAL.f( L0 ^ y2 ^ y0 ^ k3), 15 );
+
+		return a1 ^ a2 ^ a3;
 
 	}
 
@@ -491,7 +510,7 @@ public class FEALKeys {
 
 		int a2 = returnBit( L0 ^ R0 ^ L4, 7 ) ^ returnBit( L0 ^ R0 ^ L4, 15 ) ^ returnBit( L0 ^ R0 ^ L4, 23 ) ^ returnBit( L0 ^ R0 ^ L4, 31 );
 
-		
+
 		int y0 = FEAL.f( L0 ^ R0 ^ k0 );
 		int y1 = FEAL.f( L0 ^ y0 ^ k1 );
 		int y2 = FEAL.f( L0 ^ R0 ^ y1 ^ k2 );
@@ -501,13 +520,13 @@ public class FEALKeys {
 		return a1 ^ a2 ^ a3;
 
 	}
-	
+
 	private static int calcOuterConstK3_2 ( int k3, int k0, int k1, int k2 ) {
 
 		int a1 = returnBit( L0 ^ R4 ^ L4 , 23 ) ^ returnBit( L0 ^ R4 ^ L4 , 29 );
 
 		int a2 = returnBit( L0 ^ R0 ^ L4, 31 );
-		
+
 		int y0 = FEAL.f( L0 ^ R0 ^ k0 );
 		int y1 = FEAL.f( L0 ^ y0 ^ k1 );
 		int y2 = FEAL.f( L0 ^ R0 ^ y1 ^ k2 );
@@ -518,7 +537,7 @@ public class FEALKeys {
 
 	}
 
-	
+
 	private static void outerValuesK3 ( int keyInnerBits, int key0, int K1, int k2 ) {
 
 		int j = 0;
@@ -548,8 +567,8 @@ public class FEALKeys {
 			}
 
 			if ( !moveOn ) {
-				System.out.println( "SUCCESS  K3: " + Integer.toHexString(key));
-				key1.add( key );
+				//System.out.println( "SUCCESS  K3: " + Integer.toHexString(key));
+				evaluatePossibilities( key0, K1, k2, key );
 
 			} else {
 				moveOn = false;
@@ -570,10 +589,10 @@ public class FEALKeys {
 		int y0 = FEAL.f( L0 ^ R0 ^ k0 );
 		int y1 = FEAL.f( L0 ^ y0 ^ k1 );
 		int y2 = FEAL.f( L0 ^ R0 ^ y1 ^ k2 );
-		int y3 = FEAL.f( L0 ^ y2 ^ k3 );
+		int y3 = FEAL.f( L0 ^ y0 ^ y2 ^ k3 );
 
 		int k4 = L0 ^ R0 ^ y1 ^ y3 ^ L4;
-		int k5 = R0 ^ y1 ^ y3 ^ y0 ^ y2 ^ R4;
+		int k5 = R0 ^ y0 ^ y1 ^ y2 ^ y3 ^ R4;
 
 		int key [] = { k0, k1, k2, k3, k4, k5 };
 
@@ -581,23 +600,27 @@ public class FEALKeys {
 		// test keys against pairs
 		for ( i = 0; i < PAIRS_LENGTH; i++ ) {
 
+			// System.out.println( "hello");
 			byte [] b = new byte[ 8 ];
+ 
+			
+			for ( int l = 0 ; l < b.length; l++ ) {
+                b[l] = (byte)(Integer.parseInt(plainText[i].substring(l * 2, (l * 2) + 2),16)&255);
+			} 
 
-			for ( int l = 0, j = 0; i < b.length; l++, j += 2 ) {
-				b[ l ] = ( byte )( Integer.parseInt( plainText[ i ].substring( j, j + 2 ),16)&255);
-			}  
-
+			
 			FEAL.encrypt( b, key );
-			String current = "";
-			current += b[ 0 ] + b[ 1 ] + b[ 2 ] + b[ 3 ] + b[ 4 ] + b[ 5 ] + b[ 6 ] + b[ 7 ];
+			
+			StringBuilder sb = new StringBuilder(b.length * 2);
+            for(byte t: b)
+                sb.append(String.format("%02x", t));
 
-			if ( !cipherText[ i ].equals( current ) ) {
-				break;
-			}
+            if(!cipherText[i].equals(sb.toString()))
+                break;
 
 		}
-
-		if ( i == PAIRS_LENGTH ) {
+		
+		if ( i >= PAIRS_LENGTH ) {
 			KeyOptions current = new KeyOptions( k0, k1, k2, k3, k4, k4 );
 			keys.add( current );
 			System.out.println( "Key zero:    0x" + Integer.toHexString( k0 ) );
@@ -647,18 +670,17 @@ public class FEALKeys {
 		populatePairs();
 
 		keyZero();
-		System.out.println(key1.size());
 		for ( int i = 0; i < 32; i++ ) {
-			int bit = returnBit( key1.get( 0 ), i );
+			int bit = returnBit( keys.get( 0 ).keyTwo, i );
 			int j = 0;
-			for ( j = 1; j < key1.size(); j++ ) {
-				if ( bit != returnBit( key1.get( j ), i ) ) break;
+			for ( j = 1; j < keys.size(); j++ ) {
+				if ( bit != returnBit( keys.get( j ).keyTwo, i ) ) break;
 			}
-			if ( j == key1.size() ) System.out.print(bit);
+			if ( j == keys.size() ) System.out.print(bit);
 			else System.out.print("?");
 		}
 
-		System.out.println( "Number of matching key sets: " + keys.size() );		
+		System.out.println( "\nNumber of matching key sets: " + keys.size() );		
 
 	}
 
