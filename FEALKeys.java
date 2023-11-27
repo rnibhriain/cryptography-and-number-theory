@@ -178,7 +178,7 @@ public class FEALKeys {
 			}
 
 			if ( !moveOn ) {
-				System.out.println( "SUCCESS K0: " + Integer.toHexString( key ) );
+				//System.out.println( "SUCCESS K0: " + Integer.toHexString( key ) );
 				keyOne( key );
 			} else {
 				moveOn = false;
@@ -205,7 +205,6 @@ public class FEALKeys {
 			key = inner12Bits( i );
 			dividePairs( 0 );
 			j = calcInnerConstK1( key, k0 );
-			moveOn = false;
 
 			int k = 0;
 			for ( k = 1; k < PAIRS_LENGTH; k++ ) {
@@ -221,8 +220,7 @@ public class FEALKeys {
 			}
 
 			if ( !moveOn ) {
-				System.out.println( "SUCCESS Inner Values K1: " + Integer.toHexString( key ) );
-				// outerValuesK1( key, k0 );
+				outerValuesK1( key, k0 );
 			} else {
 				moveOn = false;
 			} 
@@ -234,55 +232,31 @@ public class FEALKeys {
 
 	// S5,13,21(L0 ⊕ L4 ⊕ R4) ⊕ S15 F(L0 ⊕ F(L0 ⊕ R0 ⊕ K0) ⊕ K1)
 	private static int calcInnerConstK1 ( int k1, int k0 ) {
-		/*
-		int a1 = returnBit( L0 ^ L4 ^ R4, 5 ) ^ returnBit( L0 ^ L4 ^ R4, 13 ) ^ returnBit( L0 ^ L4 ^ R4, 21 );
-
-		int y = FEAL.f( L0 ^ R0 ^ k0 );
-
-		int a2 = returnBit( FEAL.f( L0 ^ y ^ k1 ), 15 );
-
-		return a1 ^ a2; */
-
-		//return 0;
 
 		// a = S5, 13, 21( L0 XOR R0 XOR L4 )
-		int a1 =  returnBit( L0 ^ R0 ^ L4, 5 ) ^ returnBit( L0 ^ R0 ^ L4, 13 ) ^ returnBit( L0 ^ R0 ^ L4, 21 );
-
-		// S15( L0 XOR L4 XOR R4 )
-		int a2 = returnBit( L0 ^ L4 ^ R4, 15 );
-		
-		int y0 = FEAL.f( L0 ^ R0 ^ k0 );
-
-		// S15( F ( L0 XOR R0 XOR K0 ) )
-		int a3 = returnBit( FEAL.f( L0 ^ y0 ^ k1 ), 15 );
-
-		return a1 ^ a2 ^ a3;
-
-		/*
-		// a = S5, 13, 21( L0 XOR R0 XOR L4 )
-		int a1 =  returnBit( L0 ^ R0 ^ L4, 5 ) ^ returnBit( L0 ^ R0 ^ L4, 13 ) ^ returnBit( L0 ^ R0 ^ L4, 21 );
-
-		// S15( L0 XOR L4 XOR R4 )
-		int a2 = returnBit( L0 ^ L4 ^ R4, 15 );
+		int a1 =  returnBit( L0 ^ L4 ^ R4, 5 ) ^ returnBit( L0 ^ L4 ^ R4, 13 ) ^ returnBit( L0 ^ L4 ^ R4, 21 );
 
 		int y = FEAL.f( L0 ^ R0 ^ k0 );
 
 		// S15( F ( L0 XOR R0 XOR K0 ) )
 		int a3 = returnBit( FEAL.f( L0 ^ y ^ k1 ), 15 );
 
-		return a1 ^ a2 ^ a3; */
+		return a1 ^ a3; 
+
 	}
 
-	//  S13(L0 ⊕ L4 ⊕ R4) ⊕ S7, 15, 23, 31 F( L0 ⊕ F( L0 ⊕ R0 ⊕ K0) ⊕ K1)
 	private static int calcOuterConstK1 ( int k1, int k0 ) {
 
-		int a1 = returnBit( L0 ^ L4 ^ R4, 13 );
+		// S13(L0 ⊕ L4 ⊕ R4)
+		int a1 = returnBit( L0 ^ L4 ^ R4 , 13 );
 
-		int y = FEAL.f( L0 ^ R0 ^ k0);
+		// S7,15,23,31 F(L0 ⊕ y ⊕ K0)
+		int y0 = FEAL.f( L0 ^ R0 ^ k0 );
+		int y1 = FEAL.f( L0 ^ y0 ^ k1 );
 
-		int a2 = returnBit( FEAL.f( L0 ^ y ^ k1 ), 7 ) ^ returnBit( FEAL.f( L0 ^ y ^ k1 ), 15 ) ^ returnBit( FEAL.f( L0 ^ y ^ k1 ), 23 ) ^ returnBit( FEAL.f( L0 ^ y ^ k1 ), 31  );
+		int a3 = returnBit( y1, 7 ) ^ returnBit( y1, 15 ) ^ returnBit( y1, 23 ) ^ returnBit( y1, 31 );
 
-		return a1 ^ a2;
+		return a1 ^ a3;
 
 	}
 
@@ -296,7 +270,6 @@ public class FEALKeys {
 		for ( int i = 0; i < Math.pow( 2, 20 ); i++ ) {
 
 			key = outer20Bits( i, keyInnerBits );
-			key |= keyInnerBits;
 			dividePairs( 0 );
 			j = calcOuterConstK1( key, key0 );
 
@@ -314,8 +287,8 @@ public class FEALKeys {
 			}
 
 			if ( !moveOn ) {
-				System.out.println( "SUCCESS Key One");
-				key1.add( key );
+				keyTwo( key0, key );
+
 			} else {
 				moveOn = false;
 
@@ -328,8 +301,119 @@ public class FEALKeys {
 	private static void keyOne ( int k0 ) {
 		// System.out.println( "Begin attack on key One....." + k0 );
 		innerValuesK1( k0 );
-		//System.out.println( "Key options : " + key1.size() );
 	}
+
+	// calc inner bits possibilities 10..15 & 18..23 
+	private static void innerValuesK2 ( int k0, int k1 ) {
+
+		int j = 0;
+		boolean moveOn = false;
+		int key = 0;
+
+		// optimised function again
+		for ( int i = 0; i < Math.pow( 2, 12 ); i++ ) {
+
+			key = inner12Bits( i );
+			dividePairs( 0 );
+			j = calcInnerConstK2( key, k0, k1 );
+
+			int k = 0;
+			for ( k = 1; k < PAIRS_LENGTH; k++ ) {
+
+				dividePairs( k );
+
+				if ( j != calcInnerConstK2( key, k0, k1 ) ) {
+					moveOn = true;
+					k = PAIRS_LENGTH;
+
+				}
+
+			}
+
+			if ( !moveOn ) {
+				outerValuesK2( key, k0, k1 );
+			} else {
+				moveOn = false;
+			} 
+
+		}
+
+
+	}
+
+
+	private static int calcInnerConstK2 ( int k2, int k0, int k1 ) {
+
+        int a1 = returnBit( L0 ^ R0 ^ L4, 5 ) ^ returnBit( L0 ^ R0 ^ L4, 13 ) ^ returnBit( L0 ^ R0 ^ L4, 21 );
+
+        int y0 = FEAL.f( L0 ^ R0 ^ k0 );
+        int y1 = FEAL.f( L0 ^ y0 ^ k1 );
+        int a2 = returnBit( FEAL.f( L0 ^ R0 ^ y1 ^ k2), 15 );
+
+        return a1 ^ a2;
+
+	}
+
+	private static int calcOuterConstK2 ( int k2, int k0, int k1 ) {
+
+		// S13(L0 ⊕ L4 ⊕ R4)
+		int a1 = returnBit( L0 ^ R0 ^ L4 , 13 );
+
+		// S7,15,23,31 F(L0 ⊕ y ⊕ K0)
+		int y0 = FEAL.f( L0 ^ R0 ^ k0 );
+		int y1 = FEAL.f( L0 ^ y0 ^ k1 );
+
+		int a3 = returnBit( FEAL.f( L0 ^ R0 ^ y1 ^ k2), 7 ) ^ returnBit( FEAL.f( L0 ^ R0 ^ y1 ^ k2), 15 ) ^ returnBit( FEAL.f( L0 ^ R0 ^ y1 ^ k2), 23 ) ^ returnBit( FEAL.f( L0 ^ R0 ^ y1 ^ k2), 31 );
+
+		return a1 ^ a3;
+
+	}
+
+	
+	private static void outerValuesK2 ( int keyInnerBits, int key0, int key1 ) {
+
+		int j = 0;
+		boolean moveOn = false;
+		int key = 0;
+
+		// optimised version of the original function - move on if its not equal to the first result
+		for ( int i = 0; i < Math.pow( 2, 20 ); i++ ) {
+
+			key = outer20Bits( i, keyInnerBits );
+			dividePairs( 0 );
+			j = calcOuterConstK2( key, key0, key1 );
+
+			int k = 0;
+			for ( k = 1; k < PAIRS_LENGTH; k++ ) {
+
+				dividePairs( k );
+
+				if ( j != calcOuterConstK2( key, key0, key1 ) ) {
+					moveOn = true;
+					k = PAIRS_LENGTH;
+
+				}
+
+			}
+
+			if ( !moveOn ) {
+				System.out.println( "SUCCESS  K2: " + Integer.toHexString(key));
+				this.key1.add( key );
+
+			} else {
+				moveOn = false;
+
+			}
+
+		}
+
+	}
+
+	private static void keyTwo ( int k0, int k1 ) {
+		// System.out.println( "Begin attack on key One....." + k0 );
+		innerValuesK2( k0, k1 );
+	}
+
 
 	private static void evaluatePossibilities ( int k0, int k1, int k2, int k3 ) {
 
@@ -379,7 +463,6 @@ public class FEALKeys {
 
 
 	// populate the arrays with all of the pairs
-
 	private static void populatePairs () throws IOException {
 
 		FileReader fr = new FileReader("known.txt"); 
@@ -415,6 +498,16 @@ public class FEALKeys {
 		populatePairs();
 
 		keyZero();
+		/*System.out.println(key1.size());
+		for ( int i = 0; i < 32; i++ ) {
+			int bit = returnBit( key1.get( 0 ), i );
+			int j = 0;
+			for ( j = 1; j < key1.size(); j++ ) {
+				if ( bit != returnBit( key1.get( j ), i ) ) break;
+			}
+			if ( j == key1.size() ) System.out.print("");
+			else System.out.println(i);
+		}*/
 
 		System.out.println( "Number of matching key sets: " + keys.size() );		
 
