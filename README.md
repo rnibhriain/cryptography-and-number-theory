@@ -1,4 +1,4 @@
-# cryptography-and-number-theory
+# Cryptography and Number Theory
 
 ## Assignment for module CA642 - Achieved 96%
 
